@@ -46,6 +46,8 @@ const (
 
 func (a amino) String() string {
 	switch a {
+	case unknown:
+		return "Unknown"
 	case stop:
 		return "Stop"
 	case phe:
@@ -89,7 +91,8 @@ func (a amino) String() string {
 	case gly:
 		return "Gly"
 	default:
-		panic("got unknown amino acid" + fmt.Sprint(a))
+		msg := fmt.Sprintf("got unknown amino acid code: %d", a)
+		panic(msg)
 	}
 }
 
@@ -183,15 +186,14 @@ func (input *rna) decodeNextAminoAcid() (amino, error) {
 	}
 
 	codon := (*input)[:3]
+	*input = (*input)[3:]
 
-	c, ok := CODON_MAP[codon]
+	aminoAcid, ok := CODON_MAP[codon]
 	if !ok {
 		return unknown, errors.New("invalid nucliotide sequence")
 	}
 
-	*input = (*input)[3:]
-
-	return c, nil
+	return aminoAcid, nil
 }
 
 func (input *rna) nonEmpty() bool {
@@ -208,12 +210,15 @@ func main() {
 
 	var rnaLine rna = rna(line)
 
+	peptide := make([]amino, 0, len(rnaLine)/3)
 	for rnaLine.nonEmpty() {
-		v, err := rnaLine.decodeNextAminoAcid()
+		aminoAcid, err := rnaLine.decodeNextAminoAcid()
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		fmt.Println(v)
+		peptide = append(peptide, aminoAcid)
 	}
+
+	fmt.Println(peptide)
 }
