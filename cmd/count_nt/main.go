@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"blumen.place/gokatas/utils"
 )
 
 func countNt(line string) (int, int, int, int) {
@@ -41,7 +43,7 @@ func main() {
 		fmt.Println(err)
 		os.Exit(-1)
 	}
-	line = prepareLine(line)
+	line = utils.TrimInput(line)
 
 	aCount, cCount, gCount, tCount := countNt(line)
 

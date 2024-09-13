@@ -5,15 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strings"
-)
 
-func trimInput(in string) string {
-	in = strings.TrimSuffix(in, "\n\r\t ")
-	in = strings.TrimPrefix(in, "\t ")
-	in = strings.ToLower(in)
-	return in
-}
+	"blumen.place/gokatas/utils"
+)
 
 func translate(in string) (string, error) {
 	result := make([]rune, 0, len(in))
@@ -42,7 +36,7 @@ func main() {
 		os.Exit(-1)
 	}
 
-	dna := trimInput(in)
+	dna := utils.TrimInput(in)
 
 	rna, err := translate(dna)
 	if err != nil {

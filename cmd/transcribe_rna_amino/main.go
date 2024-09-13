@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"blumen.place/gokatas/utils"
 )
 
 func prepareString(line string) string {
-	line = strings.TrimSuffix(line, "\n\r\t ")
-	line = strings.TrimPrefix(line, "\t ")
+	line = strings.TrimSpace(line)
 	line = strings.ToLower(line)
 	return line
 }
@@ -200,6 +201,38 @@ func (input *rna) nonEmpty() bool {
 	return len(*input) >= 3
 }
 
+type rnaIter struct {
+	r     rna
+	index int
+}
+
+func newRnaIter(r rna) *rnaIter {
+	return &rnaIter{
+		r:     r,
+		index: 0,
+	}
+}
+
+func (self *rnaIter) hasNext() bool {
+	return self.index <= len(self.r)-3
+}
+
+func (self *rnaIter) next() (amino, error) {
+	if !self.hasNext() {
+		return unknown, errors.New("one codon require 3 nucliotides")
+	}
+
+	codon := self.r[self.index : self.index+3]
+	self.index += 3
+
+	aminoAcid, ok := CODON_MAP[codon]
+	if !ok {
+		return unknown, errors.New("invalid nucliotide sequence")
+	}
+
+	return aminoAcid, nil
+}
+
 func main() {
 	rdr := bufio.NewReader(os.Stdin)
 	line, err := rdr.ReadString('\n')
@@ -208,17 +241,28 @@ func main() {
 		os.Exit(-1)
 	}
 
+	line = utils.TrimInput(line)
+
 	var rnaLine rna = rna(line)
 
-	peptide := make([]amino, 0, len(rnaLine)/3)
-	for rnaLine.nonEmpty() {
-		aminoAcid, err := rnaLine.decodeNextAminoAcid()
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		peptide = append(peptide, aminoAcid)
+	peptide, err := processRna(rnaLine)
+	if err != nil {
+		return
 	}
 
 	fmt.Println(peptide)
+}
+
+func processRna(rnaLine rna) ([]amino, error) {
+	peptide := make([]amino, 0, len(rnaLine)/3)
+
+	ri := newRnaIter(rnaLine)
+	for ri.hasNext() {
+		aminoAcid, err := ri.next()
+		if err != nil {
+			return nil, err
+		}
+		peptide = append(peptide, aminoAcid)
+	}
+	return peptide, nil
 }
