@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -33,6 +34,30 @@ func compute(month, litterSize int) int {
 	}
 }
 
+func parseInput(input string) (int, int, error) {
+	line := utils.TrimInput(input)
+
+	chunks := strings.Split(line, " ")
+	if len(chunks) != 2 {
+		return 0, 0, errors.New("failed to parse input, two numbers expected")
+	}
+
+	month, err := strconv.Atoi(chunks[0])
+	if err != nil {
+		return 0, 0, fmt.Errorf("failed to parse the month parameter: %w", err)
+	}
+	if month > 40 {
+		return 0, 0, errors.New("month must be smaller or equal 40")
+	}
+
+	litterSize, err := strconv.Atoi(chunks[1])
+	if err != nil {
+		return 0, 0, fmt.Errorf("failed to parse litter parameter: %w", err)
+	}
+
+	return month, litterSize, nil
+}
+
 func main() {
 	rdr := bufio.NewReader(os.Stdin)
 	line, err := rdr.ReadString('\n')
@@ -41,25 +66,7 @@ func main() {
 		os.Exit(-1)
 	}
 
-	line = utils.TrimInput(line)
-
-	chunks := strings.Split(line, " ")
-	if len(chunks) != 2 {
-		fmt.Println("two numbers expected")
-		os.Exit(-1)
-	}
-
-	month, err := strconv.Atoi(chunks[0])
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(-1)
-	}
-	if month > 40 {
-		fmt.Println("month must be smaller or equal 40")
-		os.Exit(-1)
-	}
-
-	litterSize, err := strconv.Atoi(chunks[1])
+	month, litterSize, err := parseInput(line)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(-1)
